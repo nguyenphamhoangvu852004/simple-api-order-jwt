@@ -3,28 +3,28 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export class UpdateUserInputDto {
   @ApiProperty({
-    example: 'user@gmail.com',
+    example: 'usergmail@gmail.com',
     description: 'User email address',
     required: false,
   })
   email?: string;
 
   @ApiProperty({
-    example: 'John Doe',
+    example: 'Nguyễn Văn A',
     description: 'User full name',
     required: false,
   })
   fullName?: string;
 
   @ApiProperty({
-    example: '0387482641',
+    example: '0387482xyz',
     description: 'User phone number',
     required: false,
   })
   phoneNumber?: string;
 
   @ApiProperty({
-    example: '123 Main St, Anytown',
+    example: 'Lê Văn Khương, Quận 12',
     description: 'User address',
     required: false,
   })
