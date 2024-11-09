@@ -2,7 +2,7 @@ import { Controller, Post, Body, Request, UseGuards } from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { JwtAuthGuard } from '../auth/passport/jwt-auth.guard';
 import { CreateOrderDTO } from './dto/create.order.dto';
-import { ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
 
 @Controller('orders')
 export class OrdersController {
@@ -10,6 +10,7 @@ export class OrdersController {
 
   @UseGuards(JwtAuthGuard)
   @Post()
+  @ApiBearerAuth() // Để Swagger biết endpoint này cần xác thực bằng JWT
   @ApiOperation({ summary: 'Create a new order' }) // Mô tả chức năng
   @ApiResponse({
     status: 201,
