@@ -3,6 +3,7 @@ import { DeepPartial, Repository } from 'typeorm';
 import { Users } from '../typeOrm/users';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UpdateUserInputDto, UpdateUserOutputDto } from './dto/update.user.dto';
+import { GetUserByIdOutputDto } from './dto/get.user.by.id.dto';
 
 @Injectable()
 export class UsersService {
@@ -37,7 +38,18 @@ export class UsersService {
     };
   }
 
-  // findUserById(id: number) {
-  //   return this.userRepo.findOne({ where: { UserID: id } });
-  // }
+  async getUserProfileById(userId: number): Promise<GetUserByIdOutputDto> {
+    const response = await this.userRepo.findOne({ where: { UserID: userId } });
+    const getUserByIdOutputDto: GetUserByIdOutputDto =
+      new GetUserByIdOutputDto();
+    getUserByIdOutputDto.userId = response.UserID;
+    getUserByIdOutputDto.fullname = response.FullName
+      ? response.FullName
+      : null;
+    getUserByIdOutputDto.address = response.Address ? response.Address : null;
+    getUserByIdOutputDto.phoneNumber = response.PhoneNumber
+      ? response.PhoneNumber
+      : null;
+    return getUserByIdOutputDto;
+  }
 }
