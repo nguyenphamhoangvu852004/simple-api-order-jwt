@@ -12,6 +12,7 @@ async function bootstrap() {
     .setDescription('The Fastfood Order System API')
     .setVersion('1.0')
     // .addTag('cats')
+    .addServer('/api')
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('swagger', app, document);
