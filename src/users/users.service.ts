@@ -13,13 +13,11 @@ export class UsersService {
     id: number,
     updateUserDto: UpdateUserInputDto, // DTO cho dữ liệu đầu vào
   ): Promise<UpdateUserOutputDto> {
-    // Sử dụng Output DTO
-    // Cập nhật đối tượng user với các trường có trong DTO
     const userToUpdate: Partial<Users> = {
-      Email: updateUserDto.email, // Chuyển 'email' thành 'Email'
-      FullName: updateUserDto.fullName, // Chuyển 'fullName' thành 'FullName'
-      PhoneNumber: updateUserDto.phoneNumber, // Chuyển 'phoneNumber' thành 'PhoneNumber'
-      Address: updateUserDto.address, // Chuyển 'address' thành 'Address'
+      Email: updateUserDto.email,
+      FullName: updateUserDto.fullName,
+      PhoneNumber: updateUserDto.phoneNumber,
+      Address: updateUserDto.address,
     };
 
     // Cập nhật người dùng

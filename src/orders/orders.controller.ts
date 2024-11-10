@@ -10,7 +10,7 @@ export class OrdersController {
 
   @UseGuards(JwtAuthGuard)
   @Post()
-  @ApiBearerAuth() // Để Swagger biết endpoint này cần xác thực bằng JWT
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Create a new order' }) // Mô tả chức năng
   @ApiResponse({
     status: 201,
@@ -18,7 +18,7 @@ export class OrdersController {
     schema: {
       example: {
         message: 'Order created successfully',
-        orderId: 1, // Ví dụ ID của đơn hàng
+        orderId: 1,
       },
     },
   })

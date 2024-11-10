@@ -28,9 +28,7 @@ export class UsersController {
     @Request() req,
     @Body() updateUserDto: UpdateUserInputDto, // Sử dụng Input DTO
   ): Promise<UpdateUserOutputDto> {
-    // Sử dụng Output DTO
     const userId = req.user.userId; // lấy userId từ accessToken đã được giải mã
-
     return await this.usersService.updateUser(userId, updateUserDto);
   }
 
