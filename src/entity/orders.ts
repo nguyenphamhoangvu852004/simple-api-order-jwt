@@ -35,7 +35,6 @@ export class Orders {
 
   @CreateDateColumn({ name: 'createdAt', nullable: false })
   CreatedAt: Date;
-
   @CreateDateColumn({ name: 'updatedAt', nullable: false })
   UpdatedAt: Date;
 }

@@ -16,13 +16,13 @@ export class UsersController {
 
   @UseGuards(JwtAuthGuard)
   @Put('')
-  @ApiBearerAuth() // Để Swagger biết endpoint này cần xác thực bằng JWT
-  @ApiOperation({ summary: 'Update user profile' }) // Tóm tắt chức năng của endpoint
-  @ApiBody({ type: UpdateUserInputDto }) // Mô tả dữ liệu trong phần body của request
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Update user profile' })
+  @ApiBody({ type: UpdateUserInputDto })
   @ApiResponse({
     status: 200,
     description: 'User profile successfully updated',
-    type: UpdateUserOutputDto, // Kiểu dữ liệu trả về
+    type: UpdateUserOutputDto,
   })
   async updateUser(
     @Request() req,
@@ -36,8 +36,8 @@ export class UsersController {
 
   @UseGuards(JwtAuthGuard)
   @Get('')
-  @ApiBearerAuth() // Để Swagger biết endpoint này cần xác thực bằng JWT
-  @ApiOperation({ summary: 'Get profile user by userId' }) // Tóm tắt chức năng của endpoint
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get profile user by userId' })
   @ApiResponse({
     status: 200,
     description: 'Get User profile successfully',

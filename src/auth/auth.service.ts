@@ -5,7 +5,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Users } from '../typeOrm/users';
+import { Users } from '../entity/users';
 import { Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
 import {

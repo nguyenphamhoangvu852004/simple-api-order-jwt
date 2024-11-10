@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { DeepPartial, Repository } from 'typeorm';
-import { Users } from '../typeOrm/users';
+import { Users } from '../entity/users';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UpdateUserInputDto, UpdateUserOutputDto } from './dto/update.user.dto';
 import { GetUserByIdOutputDto } from './dto/get.user.by.id.dto';
