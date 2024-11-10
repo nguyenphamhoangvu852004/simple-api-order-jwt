@@ -49,12 +49,12 @@ export class AuthController {
 
   @Post('token')
   async generateNewAccessToken(
-    @Headers('Authorization') authHeader: string,
+    @Headers('refreshToken') refreshToken: string, // Lấy refresh token từ header
   ): Promise<string> {
-    const refreshToken = authHeader.split(' ')[1]; // Lấy refresh token từ header
     if (!refreshToken) {
       throw new BadRequestException('Refresh token is missing');
     }
+
     return this.authService.generateNewAccessToken(refreshToken);
   }
 }
