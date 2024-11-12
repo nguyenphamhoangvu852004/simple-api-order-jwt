@@ -81,4 +81,64 @@ export class OrdersService {
       message: 'Order created successfully',
     };
   }
+
+  async getUserOrders(userId: number) {
+    const query = `
+    SELECT 
+      u.userId,
+      o.orderId,
+      o.status,
+      o.createdAt AS orderCreatedAt,
+      o.updatedAt AS orderUpdatedAt,
+      JSON_ARRAYAGG(
+        JSON_OBJECT(
+          'productName', p.productName,
+          'quantity', oi.quantity,
+          'amount', oi.amount,
+          'imageURL', p.imageURL,
+          'productSize', ps.size,
+          'productPriceFolowSize', ps.price
+        )
+      ) AS products
+    FROM 
+      Users u
+    JOIN 
+      Orders o ON u.userId = o.userId
+    JOIN 
+      OrdersItems oi ON o.orderId = oi.orderId
+    JOIN 
+      Products p ON oi.productId = p.productID
+    LEFT JOIN 
+      ProductSizes ps ON oi.productSizeId = ps.productSizeId
+    WHERE 
+      u.userId = ?
+    GROUP BY 
+      o.orderId;
+  `;
+
+    const orders = await this.ordersRepository.query(query, [userId]);
+
+    return orders;
+  }
+
+  // Xóa đơn hàng
+  async deleteOrder(userId: number, orderId: number): Promise<boolean> {
+    // Kiểm tra đơn hàng có thuộc quyền người dùng không
+    const order = await this.ordersRepository.findOne({
+      where: { OrderID: orderId, User: { UserID: userId } },
+      relations: ['OrderItems'], // Tải các mục trong đơn hàng
+    });
+
+    if (!order) {
+      return false; // Nếu không tìm thấy đơn hàng hoặc đơn hàng không thuộc về người dùng
+    }
+
+    // Xóa các mục trong đơn hàng
+    await this.ordersItemsRepository.delete({ Orders: { OrderID: orderId } });
+
+    // Xóa đơn hàng
+    await this.ordersRepository.delete({ OrderID: orderId });
+
+    return true;
+  }
 }
