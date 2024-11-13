@@ -50,4 +50,8 @@ export class UsersService {
       : null;
     return getUserByIdOutputDto;
   }
+
+  async getUserList() {
+    return await this.userRepo.find();
+  }
 }

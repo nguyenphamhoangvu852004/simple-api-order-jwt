@@ -9,6 +9,8 @@ import {
   ApiResponse,
 } from '@nestjs/swagger';
 import { GetUserByIdOutputDto } from './dto/get.user.by.id.dto';
+import { RolesGuard } from '../auth/passport/role.guard';
+import { Roles } from '../auth/passport/roles.decorator';
 
 @Controller('users')
 export class UsersController {
@@ -44,5 +46,58 @@ export class UsersController {
   async getUserById(@Request() req): Promise<GetUserByIdOutputDto> {
     const userId: number = req.user.userId;
     return await this.usersService.getUserProfileById(userId);
+  }
+
+  @Roles('admin') // Chỉ admin mới có quyền truy cập
+  @UseGuards(JwtAuthGuard, RolesGuard) // Áp dụng guard JWT và roles
+  @Get('usersList') // Định nghĩa route API
+  @ApiBearerAuth() // Chỉ ra rằng token Bearer là bắt buộc
+  @ApiOperation({ summary: 'Admin - Get all users' }) // Tóm tắt mục đích API
+  @ApiResponse({
+    status: 200,
+    description: 'Successfully fetched the list of users',
+    schema: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          UserID: { type: 'number', example: 1 },
+          Email: { type: 'string', example: 'abyxyz@gmail.com' },
+          Password: {
+            type: 'string',
+            example:
+              'hashed password',
+          },
+          FullName: { type: 'string', example: 'xxx xxx xxx xxx' },
+          PhoneNumber: { type: 'string', example: '0182654321' },
+          Address: {
+            type: 'string',
+            example: 'jdksafhkljdshfsdjahfQuận ksdjfkladshflkjasdjklfhlasdkjf',
+          },
+          CreatedAt: {
+            type: 'string',
+            format: 'date-time',
+            example: '2024-11-06T04:22:22.478Z',
+          },
+          UpdatedAt: {
+            type: 'string',
+            format: 'date-time',
+            example: '2024-11-06T13:07:10.476Z',
+          },
+          IsAdmin: { type: 'boolean', example: true },
+          RefreshToken: {
+            type: 'string',
+            example: 'abc,xyz,jdkslajd',
+          },
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden. Only admin can access this endpoint',
+  })
+  async getUserList() {
+    return await this.usersService.getUserList();
   }
 }
