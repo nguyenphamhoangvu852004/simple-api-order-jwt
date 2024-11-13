@@ -6,7 +6,6 @@ import {
   OneToMany,
 } from 'typeorm';
 import { Orders } from './orders';
-import { Max } from 'class-validator';
 
 @Entity({ name: 'Users' })
 export class Users {
@@ -37,7 +36,7 @@ export class Users {
   @Column({ name: 'isAdmin', type: 'boolean', default: false, nullable: false })
   IsAdmin: boolean;
 
-  @Column({ name: 'refreshToken', nullable: true })
+  @Column({ name: 'refreshToken', nullable: true, type: 'text' })
   RefreshToken: string;
 
   @OneToMany(() => Orders, (order) => order.User)
