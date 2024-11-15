@@ -13,7 +13,6 @@ import { OrdersItems } from './entity/ordersItems';
 import { OrdersModule } from './orders/orders.module';
 import * as process from 'node:process';
 import { ConfigModule } from '@nestjs/config';
-import { AdminModule } from './admin/admin.module';
 
 @Module({
   imports: [
@@ -32,7 +31,6 @@ import { AdminModule } from './admin/admin.module';
     AuthModule,
     ProductsModule,
     OrdersModule,
-    AdminModule,
   ],
   controllers: [AppController],
   providers: [AppService],
