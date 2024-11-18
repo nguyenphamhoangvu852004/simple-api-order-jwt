@@ -108,7 +108,6 @@ export class UsersService {
     if (!user) {
       throw new NotFoundException('User not found');
     }
-
     // Xóa người dùng
     await this.userRepo.delete(userId);
   }

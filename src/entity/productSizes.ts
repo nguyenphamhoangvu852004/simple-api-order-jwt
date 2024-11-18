@@ -14,12 +14,16 @@ export class ProductSizes {
   @PrimaryGeneratedColumn({ name: 'productSizeId' })
   ProductSizeID: number;
 
-  @ManyToOne(() => Products, (product) => product.ProductSizes)
+  @ManyToOne(() => Products, (product) => product.ProductSizes, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'productId' })
   ProductID: Products;
 
   // Mối quan hệ với bảng OrdersItems
-  @OneToMany(() => OrdersItems, (orderItem) => orderItem.ProductSize)
+  @OneToMany(() => OrdersItems, (orderItem) => orderItem.ProductSize, {
+    onDelete: 'CASCADE',
+  })
   OrderItems: OrdersItems[];
 
   @Column({

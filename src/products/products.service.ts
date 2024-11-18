@@ -1,13 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Products } from 'src/entity/products';
 import { Repository } from 'typeorm';
 import { ProductDTO } from './dto/create.product.dto';
 import { ProductSizes } from '../entity/productSizes';
-import {
-  ModifyProductByAdminInputDto,
-  ModifyProductByAdminOutputDto,
-} from './dto/modify.product.by.admin';
+import { ModifyProductByAdminInputDto } from './dto/modify.product.by.admin';
 
 @Injectable()
 export class ProductsService {
@@ -75,80 +72,119 @@ export class ProductsService {
     };
   }
 
-  async modifyProductByAdmin(
-    productDto: ModifyProductByAdminInputDto,
-  ): Promise<ModifyProductByAdminOutputDto> {
+  async updateProduct(
+    productID: number,
+    updateProductDto: ModifyProductByAdminInputDto,
+  ): Promise<Products> {
+    const {
+      productName,
+      description,
+      imageURL,
+      isActive,
+      priceSmall,
+      priceMedium,
+      priceLarge,
+    } = updateProductDto;
+
     // Tìm sản phẩm theo ID
     const product = await this.productRepo.findOne({
-      where: { ProductID: productDto.productID },
-      relations: ['ProductSizes'],
+      where: { ProductID: productID },
+      select: ['ProductID'],
+      // relations: ['ProductSizes'], // Tải kèm ProductSizes
     });
 
     if (!product) {
       throw new Error('Product not found');
     }
 
-    // Cập nhật thông tin sản phẩm
-    if (productDto.productName) {
-      product.ProductName = productDto.productName;
-    }
-    if (productDto.description) {
-      product.Description = productDto.description;
-    }
-    if (productDto.imageURL) {
-      product.ImageURL = productDto.imageURL;
-    }
-    if (productDto.isActive !== undefined) {
-      product.IsActive = productDto.isActive;
-    }
+    // Cập nhật thông tin cơ bản của sản phẩm
+    product.ProductName = productName || product.ProductName;
+    product.Description = description || product.Description;
+    product.ImageURL = imageURL || product.ImageURL;
+    product.IsActive = isActive !== undefined ? isActive : product.IsActive;
 
-    // Cập nhật giá cho từng kích thước nếu có
-    if (productDto.priceSmall !== undefined) {
-      const smallSize = product.ProductSizes.find(
-        (size) => size.Size === 'Small',
-      );
-      if (smallSize) {
-        smallSize.Price = productDto.priceSmall;
-      }
-    }
-
-    if (productDto.priceMedium !== undefined) {
-      const mediumSize = product.ProductSizes.find(
-        (size) => size.Size === 'Medium',
-      );
-      if (mediumSize) {
-        mediumSize.Price = productDto.priceMedium;
-      }
-    }
-
-    if (productDto.priceLarge !== undefined) {
-      const largeSize = product.ProductSizes.find(
-        (size) => size.Size === 'Large',
-      );
-      if (largeSize) {
-        largeSize.Price = productDto.priceLarge;
-      }
-    }
-
-    // Lưu lại sản phẩm sau khi chỉnh sửa
     await this.productRepo.save(product);
 
-    return this.mapProductToDto(product);
+    // Cập nhật giá theo kích thước
+    const sizePriceMap = [
+      { size: 'Small', price: priceSmall },
+      { size: 'Medium', price: priceMedium },
+      { size: 'Large', price: priceLarge },
+    ];
+
+    for (const { size, price } of sizePriceMap) {
+      if (price !== undefined) {
+        let productSize = await this.productSizesRepo.findOne({
+          where: {
+            // @ts-ignore
+            ProductID: product.ProductID, // Dùng đúng khóa chính
+            Size: size as 'Small' | 'Medium' | 'Large', // Xác định loại rõ ràng
+          },
+        });
+
+        // Nếu chưa tồn tại ProductSize, tạo mới
+        if (!productSize) {
+          productSize = new ProductSizes();
+          productSize.ProductID = product;
+          productSize.Size = size as 'Small' | 'Medium' | 'Large';
+        }
+
+        // Cập nhật giá
+        productSize.Price = price;
+
+        await this.productSizesRepo.save(productSize);
+      }
+    }
+
+    return product;
   }
 
-  // Phương thức map dữ liệu từ entity sang DTO
-  private mapProductToDto(product: Products): ModifyProductByAdminOutputDto {
+  async getProductById(id: string): Promise<{
+    Description: string;
+    ProductName: string;
+    ProductSizes: {
+      ProductSizeID: number;
+      Price: number;
+      Size: 'Small' | 'Medium' | 'Large';
+    }[];
+    ImageURL: string;
+    ProductID: number;
+  }> {
+    const product = await this.productRepo.findOne({
+      where: { ProductID: parseInt(id, 10) },
+      relations: ['ProductSizes'], // Lấy liên kết với bảng ProductSizes
+    });
+
+    if (!product) {
+      throw new NotFoundException(`Product with ID ${id} not found`);
+    }
+
+    // Chuyển đổi từ entity sang DTO
     return {
-      productID: product.ProductID,
-      productName: product.ProductName,
-      description: product.Description,
-      imageURL: product.ImageURL,
-      isActive: product.IsActive,
-      productSizes: product.ProductSizes.map((size) => ({
-        productSizeID: size.ProductSizeID,
-        size: size.Size,
-        price: size.Price,
+      ProductID: product.ProductID,
+      ProductName: product.ProductName,
+      Description: product.Description,
+      ImageURL: product.ImageURL,
+      ProductSizes: product.ProductSizes.map((size) => ({
+        ProductSizeID: size.ProductSizeID,
+        Size: size.Size,
+        Price: size.Price,
       })),
     };
+  }
+
+  // Phương thức xóa sản phẩm theo id
+  async deleteProductByAdmin(id: number): Promise<string> {
+    const product = await this.productRepo.findOne({
+      where: { ProductID: id },
+    });
+
+    if (!product) {
+      throw new Error('Sản phẩm không tồn tại!');
+    }
+
+    // Xóa sản phẩm (và các liên kết nếu có do Cascade)
+    await this.productRepo.remove(product);
+    return `Sản phẩm với id ${id} đã được xóa`;
   }
 }

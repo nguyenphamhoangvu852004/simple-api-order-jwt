@@ -1,9 +1,19 @@
-import { Body, Controller, Get, Post, Put, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Put,
+  UseGuards,
+} from '@nestjs/common';
 import { ProductsService } from './products.service';
 import {
   ApiBearerAuth,
   ApiBody,
   ApiOperation,
+  ApiParam,
   ApiResponse,
 } from '@nestjs/swagger';
 import { ProductDTO } from './dto/create.product.dto';
@@ -35,6 +45,11 @@ export class ProductsController {
     return this.productsService.getAllProductsList();
   }
 
+  @Get('products/:id')
+  async getProductById(@Param('id') id: string) {
+    return await this.productsService.getProductById(id);
+  }
+
   @UseGuards(JwtAuthGuard, RolesGuard) // Áp dụng guard JWT và roles
   @Roles('admin') // Chỉ admin mới có quyền truy cập
   @ApiBody({ type: ProductDTO })
@@ -51,18 +66,34 @@ export class ProductsController {
     return this.productsService.createProduct(productDto);
   }
 
-  @Roles('admin') // Chỉ admin mới có quyền truy cập
-  @UseGuards(JwtAuthGuard, RolesGuard) // Áp dụng guard JWT và roles
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
+  @ApiBearerAuth()
+  @ApiParam({
+    name: 'productID',
+    description: 'The ID of the product to update',
+    type: Number,
+  })
   @ApiBody({ type: ModifyProductByAdminInputDto })
-  @ApiOperation({ summary: 'Admin - modify product info' }) // Tóm tắt mục đích API
-  @ApiBearerAuth() // Chỉ ra rằng token Bearer là bắt buộc
+  @ApiOperation({ summary: 'Admin - Modify product information' })
   @ApiResponse({
     status: 200,
     description: 'Product successfully updated',
     type: ModifyProductByAdminOutputDto,
   })
-  @Put('admin/products')
-  async modifyProductByAdmin(@Body() productDto: ModifyProductByAdminInputDto) {
-    return this.productsService.modifyProductByAdmin(productDto);
+  @Put('admin/products/:productID')
+  async updateProduct(
+    @Param('productID') productID: number,
+    @Body() updateProductDto: ModifyProductByAdminInputDto,
+  ): Promise<Products> {
+    return this.productsService.updateProduct(productID, updateProductDto);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
+  @ApiBearerAuth()
+  @Delete('admin/products/:id')
+  async deleteProductByAdmin(@Param('id') id: number) {
+    return await this.productsService.deleteProductByAdmin(id);
   }
 }

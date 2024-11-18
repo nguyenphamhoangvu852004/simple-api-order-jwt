@@ -20,10 +20,14 @@ export class Products {
   IsActive: boolean;
 
   // Mối quan hệ với bảng OrdersItems
-  @OneToMany(() => OrdersItems, (orderItem) => orderItem.Products)
+  @OneToMany(() => OrdersItems, (orderItem) => orderItem.Products, {
+    onDelete: 'CASCADE',
+  })
   OrderItems: OrdersItems[];
 
   // Mối quan hệ với bảng ProductSizes
-  @OneToMany(() => ProductSizes, (productSize) => productSize.ProductID)
+  @OneToMany(() => ProductSizes, (productSize) => productSize.ProductID, {
+    onDelete: 'CASCADE',
+  })
   ProductSizes: ProductSizes[];
 }

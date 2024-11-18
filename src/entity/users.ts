@@ -39,6 +39,6 @@ export class Users {
   @Column({ name: 'refreshToken', nullable: true, type: 'text' })
   RefreshToken: string;
 
-  @OneToMany(() => Orders, (order) => order.User)
+  @OneToMany(() => Orders, (order) => order.User, { onDelete: 'CASCADE' })
   orders: Orders[];
 }

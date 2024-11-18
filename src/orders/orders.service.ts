@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Orders } from '../entity/orders';
@@ -140,5 +140,41 @@ export class OrdersService {
     await this.ordersRepository.delete({ OrderID: orderId });
 
     return true;
+  }
+
+  // Phương thức để lấy tất cả đơn hàng
+  async getAllOrders(): Promise<Orders[]> {
+    return await this.ordersRepository.find({
+      relations: [
+        'User',
+        'OrderItems',
+        'OrderItems.Products',
+        'OrderItems.ProductSize',
+      ], // Load các quan hệ liên quan nếu cần thiết
+    });
+  }
+
+  // Phương thức để thay đổi trạng thái đơn hàng
+  async changeOrderStatus(id: number, status: string): Promise<Orders> {
+    const validStatuses = ['InProgress', 'Resolved', 'Closed'];
+
+    if (!validStatuses.includes(status)) {
+      throw new Error('Invalid status');
+    }
+
+    const order = await this.ordersRepository.findOne({
+      where: { OrderID: id },
+    });
+    if (!order) {
+      throw new NotFoundException('Order not found'); // Sử dụng NotFoundException thay vì Error
+    }
+
+    order.Status = status;
+    return this.ordersRepository.save(order); // Lưu lại trạng thái mới
+  }
+
+  async deleteOrderById(orderId: number): Promise<boolean> {
+    const result = await this.ordersRepository.delete({ OrderID: orderId });
+    return result.affected > 0; // Kiểm tra nếu có bản ghi bị xóa
   }
 }

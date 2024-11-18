@@ -26,6 +26,7 @@ import { ConfigModule } from '@nestjs/config';
       database: process.env.DB_NAME,
       entities: [Users, Products, ProductSizes, Orders, OrdersItems],
       synchronize: true,
+      logging: true,
     }),
     UsersModule,
     AuthModule,

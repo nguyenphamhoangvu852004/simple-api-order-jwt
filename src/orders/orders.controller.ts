@@ -7,6 +7,7 @@ import {
   Get,
   Delete,
   Param,
+  NotFoundException,
 } from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { JwtAuthGuard } from '../auth/passport/jwt-auth.guard';
@@ -17,13 +18,16 @@ import {
   ApiParam,
   ApiResponse,
 } from '@nestjs/swagger';
+import { RolesGuard } from '../auth/passport/role.guard';
+import { Roles } from '../auth/passport/roles.decorator';
+import { UpdateOrderStatusDto } from './dto/update.order.status.dto';
 
-@Controller('orders')
+@Controller()
 export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
 
   @UseGuards(JwtAuthGuard)
-  @Post('')
+  @Post('orders')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Create a new order' }) // Mô tả chức năng
   @ApiResponse({
@@ -104,7 +108,7 @@ export class OrdersController {
       },
     },
   })
-  @Get('usersOrders')
+  @Get('orders/usersOrders')
   async getUserOrders(@Request() req) {
     const userId = req.user.userId;
     return await this.ordersService.getUserOrders(userId);
@@ -132,7 +136,7 @@ export class OrdersController {
       },
     },
   })
-  @Delete(':orderId')
+  @Delete('orders/:orderId')
   async deleteOrder(@Request() req, @Param('orderId') orderId) {
     const { userId } = req.user;
     const result = await this.ordersService.deleteOrder(userId, orderId);
@@ -140,5 +144,70 @@ export class OrdersController {
       return { message: 'Đơn hàng đã được xóa thành công' };
     }
     return { message: 'Không tìm thấy đơn hàng hoặc bạn không có quyền xóa' };
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard) // Kiểm tra quyền xác thực và quyền admin
+  @Roles('admin') // Chỉ cho phép user có quyền 'admin'
+  @ApiBearerAuth() // Đánh dấu bảo mật API với JWT Bearer Token
+  @Get('admin/orders')
+  async getAllOrders() {
+    return await this.ordersService.getAllOrders(); // Gọi service để lấy tất cả đơn hàng
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard) // Dùng JwtAuthGuard và RolesGuard để bảo vệ route
+  @Roles('admin') // Chỉ cho phép người dùng với quyền 'admin' truy cập
+  @Post('/admin/orders/status/:id') // Route nhận id của đơn hàng từ URL
+  async changeOrderStatus(
+    @Param('id') id: number,
+    @Body() updateOrderStatusDto: UpdateOrderStatusDto,
+  ) {
+    return await this.ordersService.changeOrderStatus(
+      id,
+      updateOrderStatusDto.status,
+    );
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard) // Bảo vệ route bằng JwtAuthGuard và RolesGuard
+  @Roles('admin') // Chỉ admin được phép truy cập
+  @ApiBearerAuth() // Đánh dấu route sử dụng bảo mật JWT Bearer Token
+  @ApiOperation({ summary: 'Delete an order by ID (Admin only)' })
+  @ApiParam({
+    name: 'orderId',
+    required: true,
+    description: 'ID of the order to delete',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Order deleted successfully',
+    schema: {
+      example: {
+        message: 'Order deleted successfully',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Bad request, order not found',
+    schema: {
+      example: {
+        message: 'Order not found or already deleted',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden, not authorized',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized',
+  })
+  @Delete('admin/orders/:orderId') // Endpoint để admin xóa order
+  async deleteOrderById(@Param('orderId') orderId: number) {
+    const isDeleted = await this.ordersService.deleteOrderById(orderId); // Gọi service để xử lý xóa
+    if (isDeleted) {
+      return { message: 'Order deleted successfully' };
+    }
+    throw new NotFoundException('Order not found or already deleted');
   }
 }

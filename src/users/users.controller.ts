@@ -63,7 +63,8 @@ export class UsersController {
     return await this.usersService.getUserProfileById(userId);
   }
 
-  @UseGuards(JwtAuthGuard, RolesGuard) // Áp dụng guard JWT và roles
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin') // Áp dụng guard JWT và roles
   @Get('admin/users') // Định nghĩa route API
   @ApiBearerAuth() // Chỉ ra rằng token Bearer là bắt buộc
   @ApiOperation({ summary: 'Admin - Get all users' }) // Tóm tắt mục đích API

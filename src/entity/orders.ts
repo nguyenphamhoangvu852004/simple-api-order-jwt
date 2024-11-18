@@ -15,12 +15,16 @@ export class Orders {
   @PrimaryGeneratedColumn({ name: 'orderId' })
   OrderID: number;
 
-  @ManyToOne(() => Users, (user) => user.orders, { nullable: false })
+  @ManyToOne(() => Users, (user) => user.orders, {
+    nullable: false,
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'userId' })
   User: Users;
 
   @OneToMany(() => OrdersItems, (orderItem) => orderItem.Orders, {
     nullable: true,
+    onDelete: 'CASCADE',
   })
   OrderItems: OrdersItems[]; // Quan hệ OneToMany tới bảng OrdersItems
 
