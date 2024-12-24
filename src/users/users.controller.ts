@@ -64,10 +64,10 @@ export class UsersController {
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('admin') // Áp dụng guard JWT và roles
-  @Get('admin/users') // Định nghĩa route API
-  @ApiBearerAuth() // Chỉ ra rằng token Bearer là bắt buộc
-  @ApiOperation({ summary: 'Admin - Get all users' }) // Tóm tắt mục đích API
+  @Roles('admin')
+  @Get('admin/users')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Admin - Get all users' })
   @ApiResponse({
     status: 200,
     description: 'Successfully fetched the list of users',
@@ -115,7 +115,7 @@ export class UsersController {
     return await this.usersService.getUserList();
   }
 
-  @Roles('admin') // Chỉ admin mới có quyền truy cập
+  @Roles('admin')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @ApiBearerAuth()
   @Put('admin/users')
